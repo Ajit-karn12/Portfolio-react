@@ -40,27 +40,27 @@ function Home() {
             <div className='section-line'></div>
           </div>
 
-          <div className='proejcts-grid'>
+          <div className='projects-grid'>
             {/*projects 1 */}
-            <div className='projects-card reveal'>
+            <div className='project-card reveal'>
               <div className='proejct-image' style={{backgroundColor: '#3498db'}}>
                 <span className='project-number'>PROJECT 1</span>
               </div>
               <div className='project-info'>
                 <h3 className='project-title'>E-commerce website</h3>
-                <p className='proejct-tech'>React, Node.js MongoDB</p>
+                <p className='project-tech'>React, Node.js MongoDB</p>
                 <Link to='/projects' className='project-link'>view details</Link>
               </div>
             </div>
 
             {/* proejct 2*/}
-            <div className='projects-card reveal'>
+            <div className='project-card reveal'>
               <div className='proejct-image' style={{backgroundColor: '#2ecc71'}}>
                 <span className='project-number'>PROJECT 2</span>
               </div>
               <div className='project-info'>
                 <h3 className='project-title'>Portfolio Design</h3>
-                <p className='proejct-tech'>React, Node.js MongoDB, figma, html, css, javascript</p>
+                <p className='project-tech'>React, Node.js MongoDB, figma, html, css, javascript</p>
                 <Link to='/projects' className='project-link'>view details</Link>
               </div>
             </div>
@@ -99,7 +99,7 @@ function Home() {
               </div>
 
               <div className='skill-bar'>
-                <div className='skill-fill' style={{width: '80%'}}></div>
+                <div className='skill-bar-fill' style={{width: '80%'}}></div>
               </div>
             </div>
 
