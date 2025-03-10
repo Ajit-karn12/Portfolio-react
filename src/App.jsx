@@ -8,10 +8,13 @@ import Projects from './Projects'
 import About from './About'
 import Skills from './Skills'
 import Contact from './Contact'
+import { AnalyticsProvider } from './utils/Analytics'
 
 export default function App() {
   return (
-    <Router>
+      <AnalyticsProvider>
+
+<Router> 
       <div className='App'>
       <Header/>
       <main>
@@ -27,6 +30,8 @@ export default function App() {
       </div>
       
     </Router>
+    </AnalyticsProvider>
+     
   )
 }
 

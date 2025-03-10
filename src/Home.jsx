@@ -34,11 +34,11 @@ function Home() {
 
       {/* FEATURED PROJECTS SECTIONS*/}
       <div className='featured-projects'>
-        <div className='section-container'>
-          <div className='section-header reveal'>
-            <h2 className='section-title' Featured Projects></h2>
-            <div className='section-line'></div>
-          </div>
+  <div className='section-container'>
+    <div className='section-header reveal'>
+      <h2 className='section-title'>Featured Projects</h2>
+      <div className='section-line'></div>
+    </div>
 
           <div className='projects-grid'>
             {/*projects 1 */}
