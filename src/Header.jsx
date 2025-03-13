@@ -39,7 +39,7 @@ const Header = () => {
       <div className="header-container">
         <div className="logo">
           <Link to="/">
-            <h1 className="logo-text">PORTFOLIO</h1>
+            <h1 className="logo-text"><i>AJIT KARN</i></h1>
           </Link>
         </div>
 

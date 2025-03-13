@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAnalytics } from './utils/Analytics';
 import './style/Projects.css';
 
 const Projects = () => {
-  // Sample static projects array
-  const visibleProjects = [
+  const { trackPageView } = useAnalytics();
+  const [filter, setFilter] = useState('all');
+  const [projects, setProjects] = useState([]);
+  const [visibleProjects, setVisibleProjects] = useState([]);
+
+  // Project data
+  const projectsData = [
     {
       id: 1,
       title: 'E-commerce Website',
       category: 'web',
-      image: '#3498db',
+      image: '#3498db', // This would be a real image URL in production
       technologies: ['React', 'Node.js', 'MongoDB'],
       description: 'A full-featured e-commerce platform with product management, cart functionality, and secure checkout.',
       link: '#',
@@ -43,12 +49,72 @@ const Projects = () => {
       description: 'A customized blog platform with content management system and newsletter integration.',
       link: '#',
       featured: true
+    },
+    {
+      id: 5,
+      title: 'Dashboard UI',
+      category: 'design',
+      image: '#f1c40f',
+      technologies: ['Figma', 'Adobe XD'],
+      description: 'Admin dashboard interface design for a data analytics platform.',
+      link: '#',
+      featured: false
+    },
+    {
+      id: 6,
+      title: 'Social Media App',
+      category: 'mobile',
+      image: '#1abc9c',
+      technologies: ['Flutter', 'Firebase'],
+      description: 'A cross-platform social media application with real-time messaging and content sharing.',
+      link: '#',
+      featured: false
     }
   ];
 
+  useEffect(() => {
+    // Track page view
+    trackPageView('Projects');
+
+    // Set projects data
+    setProjects(projectsData);
+    setVisibleProjects(projectsData);
+
+    // Initialize animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.reveal').forEach(item => {
+      observer.observe(item);
+    });
+
+    return () => {
+      // Clean up observer
+      document.querySelectorAll('.reveal').forEach(item => {
+        observer.unobserve(item);
+      });
+    };
+  }, [trackPageView]);
+
+  // Filter projects by category
+  const filterProjects = (category) => {
+    setFilter(category);
+    
+    if (category === 'all') {
+      setVisibleProjects(projects);
+    } else {
+      const filtered = projects.filter(project => project.category === category);
+      setVisibleProjects(filtered);
+    }
+  };
+
   return (
     <section className="projects-page">
-      {/* Header Section */}
       <div className="projects-header">
         <div className="section-container">
           <h1 className="page-title reveal">My Projects</h1>
@@ -63,10 +129,30 @@ const Projects = () => {
         <div className="section-container">
           {/* Project filters */}
           <div className="projects-filter reveal">
-            <button className="filter-button active">All</button>
-            <button className="filter-button">Web</button>
-            <button className="filter-button">Design</button>
-            <button className="filter-button">Mobile</button>
+            <button 
+              className={`filter-button ${filter === 'all' ? 'active' : ''}`}
+              onClick={() => filterProjects('all')}
+            >
+              All
+            </button>
+            <button 
+              className={`filter-button ${filter === 'web' ? 'active' : ''}`}
+              onClick={() => filterProjects('web')}
+            >
+              Web
+            </button>
+            <button 
+              className={`filter-button ${filter === 'design' ? 'active' : ''}`}
+              onClick={() => filterProjects('design')}
+            >
+              Design
+            </button>
+            <button 
+              className={`filter-button ${filter === 'mobile' ? 'active' : ''}`}
+              onClick={() => filterProjects('mobile')}
+            >
+              Mobile
+            </button>
           </div>
 
           {/* Projects grid */}
@@ -105,6 +191,13 @@ const Projects = () => {
               </div>
             ))}
           </div>
+
+          {/* No projects message */}
+          {visibleProjects.length === 0 && (
+            <div className="no-projects">
+              <p>No projects found in this category.</p>
+            </div>
+          )}
         </div>
       </div>
 

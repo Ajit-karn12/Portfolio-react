@@ -15,7 +15,7 @@ export default function App() {
       <AnalyticsProvider>
 
 <Router> 
-      <div className='App'>
+      <div className='App' style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       <Header/>
       <main>
         <Routes>

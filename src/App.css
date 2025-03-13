@@ -16,10 +16,18 @@ body {
   line-height: 1.6;
   color: #333;
   overflow-x: hidden;
+  width: 100%;
 }
 
 main {
   min-height: calc(100vh - 80px);
+  width: 100%;
+}
+
+.App {
+  width: '100%'; 
+  max-width: '100%'; 
+  overflow-x: 'hidden';
 }
 
 a {
@@ -219,4 +227,23 @@ select {
   .section-container {
     padding: 0 10px;
   }
+}
+
+
+.projects-page, .about-page, .skills-page, .contact-page, .home,
+.projects-header, .about-header, .skills-header, .contact-header, .hero-section,
+.projects-content, .about-content, .skills-content, .contact-content, .hero-content,
+.projects-cta, .about-cta, .skills-cta, .contact-cta, .location-section {
+  width: 100vw !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.section-container, .hero-container, .cta-container {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
 }
