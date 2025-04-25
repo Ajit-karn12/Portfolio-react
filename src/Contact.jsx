@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAnalytics } from './utils/analytics';
+import { db } from './firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './style/Contact.css';
 
 const Contact = () => {
@@ -16,10 +18,16 @@ const Contact = () => {
     message: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Track page view
-    trackPageView('Contact');
+    // Track page view with error handling
+    try {
+      trackPageView('Contact');
+    } catch (error) {
+      console.error('Error tracking page view:', error);
+      // Continue execution - analytics failure shouldn't break the UI
+    }
 
     // Initialize animations
     const observer = new IntersectionObserver((entries) => {
@@ -30,15 +38,24 @@ const Contact = () => {
       });
     }, { threshold: 0.1 });
     
-    document.querySelectorAll('.reveal').forEach(item => {
-      observer.observe(item);
-    });
+    try {
+      document.querySelectorAll('.reveal').forEach(item => {
+        observer.observe(item);
+      });
+    } catch (error) {
+      console.error('Error initializing animations:', error);
+      // Animation failure shouldn't break the page
+    }
 
     return () => {
-      // Clean up observer
-      document.querySelectorAll('.reveal').forEach(item => {
-        observer.unobserve(item);
-      });
+      // Clean up observer with error handling
+      try {
+        document.querySelectorAll('.reveal').forEach(item => {
+          observer.unobserve(item);
+        });
+      } catch (error) {
+        console.error('Error cleaning up observer:', error);
+      }
     };
   }, [trackPageView]);
 
@@ -85,39 +102,115 @@ const Contact = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  // Handle form submission with enhanced error handling
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return;
+    }
     
     // Validate form
     if (!validateForm()) {
       return;
     }
     
-    // In a real application, you would send the form data to your server here
-    // For this example, we'll simulate a successful form submission
-    setFormStatus({
-      submitted: true,
-      success: true,
-      message: 'Thank you for your message! I will get back to you soon.'
-    });
+    setIsSubmitting(true);
     
-    // Clear form after successful submission
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
-    
-    // In a real application, you would track the form submission in analytics
-    // useAnalytics().logToBackend('contact_form_submission', { formData });
+    try {
+      // Check if Firebase is initialized
+      if (!db) {
+        throw new Error('Firebase database not initialized');
+      }
+      
+      // Create a local copy of form data for submission
+      const submissionData = {
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        timestamp: serverTimestamp()
+      };
+      
+      // Save form data to Firebase Firestore with timeout
+      const submissionPromise = addDoc(collection(db, 'contactMessages'), submissionData);
+      
+      // Add a timeout to prevent hanging if Firebase is slow
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out')), 10000)
+      );
+      
+      await Promise.race([submissionPromise, timeoutPromise]);
+      
+      // Show success message
+      setFormStatus({
+        submitted: true,
+        success: true,
+        message: 'Thank you for your message! I will get back to you soon.'
+      });
+      
+      // Clear form after successful submission
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+      
+      // Log success to console
+      console.log('Message submitted successfully');
+      
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = 'There was an error sending your message. Please try again.';
+      
+      if (error.code) {
+        switch (error.code) {
+          case 'permission-denied':
+            errorMessage = 'You do not have permission to submit this form. Please try again later.';
+            break;
+          case 'unavailable':
+            errorMessage = 'The service is currently unavailable. Please try again later.';
+            break;
+          case 'not-found':
+            errorMessage = 'The database collection was not found. Please contact the administrator.';
+            break;
+          default:
+            errorMessage = `Error: ${error.message}`;
+        }
+      } else if (error.message === 'Request timed out') {
+        errorMessage = 'The request timed out. Please check your internet connection and try again.';
+      }
+      
+      setFormStatus({
+        submitted: true,
+        success: false,
+        message: errorMessage
+      });
+      
+      // Fallback: Store submission locally in case Firebase fails
+      try {
+        const submissionBackup = {
+          ...formData,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('contact_form_backup', JSON.stringify(submissionBackup));
+        console.log('Form data backed up locally due to submission error');
+      } catch (backupError) {
+        console.error('Error creating backup:', backupError);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <section className="contact-page">
-      <div className="contact-header">
-        <div className="section-container">
+    <section className="contact-page" style={{ width: '100vw', maxWidth: '100%', overflow: 'hidden' }}>
+      <div className="contact-header" style={{ width: '100vw', maxWidth: '100%' }}>
+        <div className="section-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
           <h1 className="page-title reveal">Get In Touch</h1>
           <p className="page-description reveal">
             Have a project in mind or want to discuss a potential collaboration? I'd love to hear from you!
@@ -125,8 +218,8 @@ const Contact = () => {
         </div>
       </div>
 
-      <div className="contact-content">
-        <div className="section-container">
+      <div className="contact-content" style={{ width: '100vw', maxWidth: '100%' }}>
+        <div className="section-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
           <div className="contact-grid">
             {/* Contact Information */}
             <div className="contact-info reveal">
@@ -158,7 +251,7 @@ const Contact = () => {
                 </div>
                 <div className="info-content">
                   <h3 className="info-title">Location</h3>
-                  <p className="info-text">Leicester, United kingdom</p>
+                  <p className="info-text">Leicester, United Kingdom</p>
                 </div>
               </div>
               
@@ -171,9 +264,6 @@ const Contact = () => {
                   <a href="https://www.linkedin.com/in/ajit-karn-b134a1126/" target="_blank" rel="noopener noreferrer" className="social-icon">
                     <i className="fab fa-linkedin"></i>
                   </a>
-                  {/* <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="social-icon">
-                    <i className="fab fa-twitter"></i>
-                  </a> */}
                   <a href="https://www.instagram.com/ajkarn12/" target="_blank" rel="noopener noreferrer" className="social-icon">
                     <i className="fab fa-instagram"></i>
                   </a>
@@ -201,6 +291,7 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     className={errors.name ? 'error' : ''}
+                    disabled={isSubmitting}
                   />
                   {errors.name && <span className="error-message">{errors.name}</span>}
                 </div>
@@ -214,6 +305,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className={errors.email ? 'error' : ''}
+                    disabled={isSubmitting}
                   />
                   {errors.email && <span className="error-message">{errors.email}</span>}
                 </div>
@@ -227,6 +319,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     className={errors.subject ? 'error' : ''}
+                    disabled={isSubmitting}
                   />
                   {errors.subject && <span className="error-message">{errors.subject}</span>}
                 </div>
@@ -240,12 +333,17 @@ const Contact = () => {
                     value={formData.message}
                     onChange={handleChange}
                     className={errors.message ? 'error' : ''}
+                    disabled={isSubmitting}
                   ></textarea>
                   {errors.message && <span className="error-message">{errors.message}</span>}
                 </div>
                 
-                <button type="submit" className="submit-button">
-                  Send Message
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -254,7 +352,7 @@ const Contact = () => {
       </div>
 
       {/* Google Map or Location Section */}
-      <div className="location-section reveal">
+      <div className="location-section reveal" style={{ width: '100vw', maxWidth: '100%' }}>
         <div className="map-container">
           {/* In a real application, you would embed a Google Map here */}
           <div className="map-placeholder">

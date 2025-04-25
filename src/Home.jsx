@@ -24,7 +24,7 @@ const Home = () => {
     }
   };
 
-  const { trackPageView } = useAnalytics();
+  const { trackPageView, trackResumeDownload } = useAnalytics();
   const heroRef = useRef(null);
   
   useEffect(() => {
@@ -72,7 +72,7 @@ const Home = () => {
             <div className="hero-cta">
               <Link to="/projects" className="cta-button">VIEW WORK</Link>
               <a href={myResume} download className="cta-button secondary" onClick={() => 
-                useAnalytics().trackResumeDownload()
+                trackResumeDownload()
               }>
                 DOWNLOAD RESUME
               </a>
