@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAnalytics } from './utils/Analytics';
-import './style/header.css';
+import './style/Header.css';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
