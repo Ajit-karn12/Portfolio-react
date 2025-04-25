@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAnalytics } from './utils/analytics';
+import { useAnalytics } from './utils/Analytics';
 import './style/Skills.css';
 
 const Skills = () => {
