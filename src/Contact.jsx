@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAnalytics } from './utils/analytics';
+import { useAnalytics } from './utils/Analytics';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './style/Contact.css';
